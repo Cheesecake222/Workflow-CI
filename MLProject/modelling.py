@@ -37,23 +37,27 @@ with mlflow.start_run(run_name="RandomForest_CI") as run:
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
 
-    # Log params
     mlflow.log_param("n_estimators", 100)
     mlflow.log_param("max_depth", 10)
     mlflow.log_param("random_state", 42)
 
-    # Log metrics
     mlflow.log_metric("accuracy",  accuracy_score(y_test, y_pred))
     mlflow.log_metric("precision", precision_score(y_test, y_pred))
     mlflow.log_metric("recall",    recall_score(y_test, y_pred))
     mlflow.log_metric("f1_score",  f1_score(y_test, y_pred))
     mlflow.log_metric("roc_auc",   roc_auc_score(y_test, y_prob))
 
-    # Log model - tanpa registered_model_name
-    mlflow.sklearn.log_model(
-        sk_model=model,
-        artifact_path="model"
-    )
+    # Simpan model ke DagsHub
+    mlflow.sklearn.log_model(sk_model=model, artifact_path="model")
+
+    # Simpan model ke local disk untuk build docker
+    local_model_path = "/tmp/local_model"
+    mlflow.sklearn.save_model(model, local_model_path)
+    print(f"Model saved locally: {local_model_path}")
+
+    # Simpan run_id ke file
+    with open("/tmp/run_id.txt", "w") as f:
+        f.write(run.info.run_id)
 
     print(f"Run ID  : {run.info.run_id}")
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
