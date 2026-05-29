@@ -31,7 +31,7 @@ jobs:
       # 4. Install dependencies
       - name: Install dependencies
         run: |
-          pip install mlflow==3.12.0 scikit-learn pandas numpy dagshub
+          pip install mlflow==3.12.0 scikit-learn pandas numpy
 
       # 5. Run MLflow project
       - name: Run mlflow project
@@ -82,7 +82,8 @@ jobs:
         run: |
           mlflow models build-docker \
             --model-uri runs:/${{ env.RUN_ID }}/model \
-            --name dindae/heart-failure-prediction
+            --name dindae/heart-failure-prediction \
+            --env-manager local
 
       # 10. Login ke Docker Hub
       - name: Log in to Docker Hub
