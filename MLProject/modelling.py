@@ -49,15 +49,14 @@ with mlflow.start_run(run_name="RandomForest_CI") as run:
     mlflow.log_metric("f1_score",  f1_score(y_test, y_pred))
     mlflow.log_metric("roc_auc",   roc_auc_score(y_test, y_prob))
 
-    # Log model ke DagsHub
+    # Log model - tanpa registered_model_name
     mlflow.sklearn.log_model(
         sk_model=model,
-        artifact_path="model",
-        registered_model_name="heart-failure-rf"
+        artifact_path="model"
     )
 
     print(f"Run ID  : {run.info.run_id}")
     print(f"Accuracy: {accuracy_score(y_test, y_pred):.4f}")
     print(f"F1 Score: {f1_score(y_test, y_pred):.4f}")
     print(f"ROC AUC : {roc_auc_score(y_test, y_prob):.4f}")
-    print("✅ Training selesai! Model tersimpan ke DagsHub.")
+    print("✅ Training selesai!")
