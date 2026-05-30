@@ -4,8 +4,4 @@ conda_env: conda.yaml
 
 entry_points:
   main:
-    parameters:
-      n_estimators: {type: int, default: 100}
-      max_depth: {type: string, default: "None"}
-    command: >
-      python modelling.py
+    command: python modelling.py

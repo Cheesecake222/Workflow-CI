@@ -27,37 +27,25 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install mlflow==3.12.0 scikit-learn pandas numpy
+          pip install mlflow scikit-learn pandas numpy
 
       - name: Run mlflow project
-        env:
-          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
-          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
-          MLFLOW_TRACKING_URI: https://dagshub.com/Cheesecake222/Eksperimen_SML_Dinda-Krisnauli-Pakpahan.mlflow
         run: |
-          cd MLProject
-          python modelling.py
+          mlflow run MLProject --env-manager=local
 
       - name: Get latest MLflow run_id
         run: |
-          RUN_ID=$(cat /tmp/run_id.txt)
+          RUN_ID=$(ls -td mlruns/1/*/ 2>/dev/null | head -n 1 | cut -d'/' -f3)
+          if [ -z "$RUN_ID" ]; then
+            RUN_ID=$(ls -td mlruns/0/*/ | head -n 1 | cut -d'/' -f3)
+          fi
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "Latest run_id: $RUN_ID"
-
-      - name: Install Python dependencies
-        run: pip install mlflow==3.12.0
-
-      - name: Upload to GitHub
-        uses: actions/upload-artifact@v4
-        with:
-          name: mlflow-artifacts-${{ github.run_number }}
-          path: MLProject/
-          retention-days: 30
 
       - name: Build Docker Model
         run: |
           mlflow models build-docker \
-            --model-uri /tmp/local_model \
+            --model-uri "runs:/$RUN_ID/model" \
             --name dindae/heart-failure-prediction \
             --env-manager local
 
