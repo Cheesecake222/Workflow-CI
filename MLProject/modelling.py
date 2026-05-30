@@ -17,7 +17,7 @@ y_test  = test_df["HeartDisease"]
 
 mlflow.sklearn.autolog()
 
-with mlflow.start_run(run_name="RandomForest_CI") as run:
+with mlflow.start_run(run_name="RandomForest_CI", nested=True) as run:
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
 
