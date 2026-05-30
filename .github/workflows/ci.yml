@@ -37,22 +37,25 @@ jobs:
 
       - name: Get latest MLflow run_id
         run: |
-          RUN_ID=$(ls -td mlruns/*/[a-f0-9]*/ 2>/dev/null \
-            | grep -v meta \
+          echo "=== Struktur mlruns ==="
+          find . -type d -name "mlruns" 2>/dev/null
+          find . -path "*/mlruns/*/*" -name "meta.yaml" 2>/dev/null | head -5
+
+          RUN_ID=$(find . -path "*/mlruns/*/*/meta.yaml" 2>/dev/null \
+            | xargs grep -l "run_id" 2>/dev/null \
             | head -n 1 \
             | awk -F'/' '{print $(NF-1)}')
+
           echo "RUN_ID=$RUN_ID" >> $GITHUB_ENV
           echo "Latest run_id: $RUN_ID"
 
       - name: Upload Artifact to GitHub
         run: |
           mkdir -p saved_model
-          cp -r mlruns/${{ env.RUN_ID }} saved_model/ 2>/dev/null || true
-          cp -r /tmp/mlruns 2>/dev/null || true
-          # Cari folder model dari mlruns
-          MODEL_PATH=$(find mlruns -type d -name "model" | head -n 1)
+          MODEL_PATH=$(find . -type d -name "model" | grep mlruns | head -n 1)
           if [ -n "$MODEL_PATH" ]; then
             cp -r "$MODEL_PATH" saved_model/
+            echo "Model copied from: $MODEL_PATH"
           fi
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
@@ -62,6 +65,7 @@ jobs:
 
       - name: Build Docker Model
         run: |
+          echo "Building docker with RUN_ID: ${{ env.RUN_ID }}"
           mlflow models build-docker \
             --model-uri "runs:/${{ env.RUN_ID }}/model" \
             --name dindae/heart-failure-prediction \
