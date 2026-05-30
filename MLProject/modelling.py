@@ -1,9 +1,12 @@
+import os
 import pandas as pd
 import mlflow
 import mlflow.sklearn
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
+# Hapus MLFLOW_RUN_ID dari environment agar tidak bentrok dengan experiment baru
+os.environ.pop("MLFLOW_RUN_ID", None)
 
 mlflow.set_experiment("heart-failure-ci")
 
@@ -17,7 +20,7 @@ y_test  = test_df["HeartDisease"]
 
 mlflow.sklearn.autolog()
 
-with mlflow.start_run(run_name="RandomForest_CI", nested=True) as run:
+with mlflow.start_run(run_name="RandomForest_CI") as run:
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
 
